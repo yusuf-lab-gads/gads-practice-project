@@ -1,0 +1,38 @@
+LAB NAME: Infrastructure Preview
+OBJ OF THE LAB: In this lab, you learn how to perform the following tasks:
+
+		- Use Marketplace to build a Jenkins Continuous Integration environment.
+
+		- Verify that you can manage the service from the Jenkins UI.
+
+		- Administer the service from the Virtual Machine host through SSH.
+
+STEPS
+- To build a Jenkins Continuous Integration environment, use the following code in your cloud shell.
+	gcloud container clusters create jenkins-cd --machine-type n1-standard-2 --num-nodes 1 --zone us-east1-d --scopes "https://www.googleapis.com/auth/source.read_write,cloud-platform" --cluster-version latest
+- To Examine the deployment
+1. to verify if jenkins is deplyed and running, input the following code:
+	gcloud container clusters list
+2. connect to Jenkins cluster by getting its credentials
+	gcloud container clusters get-credentials jenkins-cd --zone us-east1-d --project ${GOOGLE_CLOUD_PROJECT}
+
+
+how to set up Jenkins on Google Compute Engine
+- The first thing we need is to create GCE Virtual Machine
+		gcloud beta compute — project=demo-project instances create instance-1 — zone=us-central1-a — machine-type=n1-standard-1 — subnet=default — network-tier=PREMIUM — maintenance-policy=MIGRATE — — tags=http-server,https-server — image=ubuntu-1804-bionic-v20190918 — image-project=ubuntu-os-cloud — boot-disk-size=10GB — boot-disk-type=pd-standard — boot-disk-device-name=instance-1 — reservation-affinity=any
+- Create a firewall to control incoming or outgoing traffic to an instance.
+		gcloud compute — project=demo-project firewall-rules create instance-1 — direction=INGRESS — priority=1000 — network=default — action=ALLOW — rules=tcp:8080 — source-ranges=0.0.0.0/0 — target-tags=http-server,https-server
+- To install Jenkins, we need to install Java first
+		sudo apt update
+		sudo apt install openjdk-8-jdk
+- Add repository key to the system 
+		wget -q -O — https://pkg.jenkins.io/debian/jenkins.io.key | sudo apt-key add -
+- Now we need to append the Debian package repository address to the server’s sources.list
+		sudo sh -c ‘echo deb http://pkg.jenkins.io/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list’
+- Now install Jenkins as both things are in their proper place
+		sudo apt update
+		sudo apt install jenkins
+- Let’s start Jenkins using systemctl:
+		sudo systemctl start jenkins
+- we can use its status command to verify that Jenkins started successfully
+		sudo systemctl status jenkins
